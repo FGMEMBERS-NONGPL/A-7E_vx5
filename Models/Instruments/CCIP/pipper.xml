@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+
+<!-- CCIP pipper, by Dave Culp, 2 Oct 2008 -->
+
+<PropertyList>
+
+ <path>pipper.ac</path>
+
+ <animation>
+  <type>select</type>
+  <object-name>pip</object-name>
+   <condition>
+    <equals>
+     <property>fdm/jsbsim/systems/ccip/enabled</property>
+     <value>1</value>
+    </equals>
+   </condition> 
+ </animation>  
+
+
+ <animation>
+   <type>translate</type>
+   <object-name>pip</object-name>
+   <property>fdm/jsbsim/systems/ccip/pipper-offset-m</property>
+   <factor>-1.0</factor>
+   <axis>
+      <x>0</x>
+      <y>0</y>
+      <z>1</z>
+   </axis>
+ </animation>
+
+
+ <!-- *** LoD *** -->
+ <animation>
+  <type>range</type>
+  <min-m>0</min-m>
+  <max-m>5</max-m>
+ </animation>
+
+
+</PropertyList>

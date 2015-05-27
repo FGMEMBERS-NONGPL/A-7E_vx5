@@ -1,0 +1,22 @@
+AC3Db
+MATERIAL "white" rgb 1 1 1  amb 1 1 1  emis 0.906 0.906 0.906  spec 0 0 0  shi 0  trans 0
+OBJECT world
+kids 1
+OBJECT poly
+name "pip"
+texture "pipper.rgb"
+crease 45.000000
+numvert 4
+0 -0.00346 -0.00346
+0 -0.00346 0.00346
+0 0.00346 0.00346
+0 0.00346 -0.00346
+numsurf 1
+SURF 0x20
+mat 0
+refs 4
+3 0 1
+2 1 1
+1 1 0
+0 0 0
+kids 0

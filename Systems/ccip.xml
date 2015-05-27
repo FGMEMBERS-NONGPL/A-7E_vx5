@@ -1,0 +1,127 @@
+<?xml version="1.0"?>
+
+<!-- CCIP computer for the A-7E.  Optimized for a gross weight of 30,500 lb,
+     standard day, wings level delivery, 400 KIAS.  Assumes DavePack Mk-82 LD bomb.
+
+     Note that in use the pipper is usually under the aircraft's nose, and only
+     becomes visible at steeper dive angles (about 45 degrees or more).
+
+     David Culp, 1 Oct 2008.
+-->
+
+<system name="ccip">
+
+  <property>systems/ccip/target-elevation</property>
+  <channel name="Computer">
+
+       <!-- compute height above target -->
+       <summer name="systems/ccip/height-above-target">
+          <input>position/h-sl-ft</input>
+          <input>-systems/ccip/target-elevation</input>
+       </summer>
+
+       <!-- convert pitch from radians to degrees -->
+       <pure_gain name="systems/ccip/pitch-deg">
+          <input>attitude/pitch-rad</input>
+          <gain>57.29578</gain>
+       </pure_gain> 
+
+       <!-- derive flight path angle from pitch and AOA -->
+       <summer name="systems/ccip/flight-path-angle">
+          <input>systems/ccip/pitch-deg</input>
+          <input>-aero/alpha-deg</input>
+       </summer>
+
+       <!-- get speed deviation from nominal 400 knots -->
+       <summer name="systems/ccip/speed-error">
+          <input>velocities/vc-kts</input>
+          <bias>-400.0</bias>
+       </summer>
+
+       <!-- look up a speed error factor -->
+       <fcs_function name="speed_computer">
+         <function>
+          <table>
+            <independentVar lookup="row">systems/ccip/speed-error</independentVar>
+            <independentVar lookup="column">systems/ccip/flight-path-angle</independentVar>
+            <tableData>
+                     -90   -30     0
+               -100   1.0   0.865  0.75   
+                0     1.0   1.000  1.0
+                100   1.0   1.179  1.25
+                200   1.0   1.274  1.5
+            </tableData>
+          </table>
+         </function> 
+         <output>systems/ccip/speed-error-factor</output>
+       </fcs_function>
+
+       <!-- look up bomb horizontal distance, based on altitude and dive angle --> 
+       <fcs_function name="distance_computer">
+         <function>
+          <product>
+            <table>
+              <independentVar lookup="row">systems/ccip/height-above-target</independentVar>
+              <independentVar lookup="column">systems/ccip/flight-path-angle</independentVar>
+              <tableData>
+                     -82   -60.8  -40    -29.3  -19    -8.5    0
+               0      0     0      0      0      0      0      0
+               5000   773   2118   4217   5411   7143   9360   12491 
+               10000  1396  4442   7752   9517   11995  14697  18363
+               15000  2407  5986   10928  13354  16018  19537  23694
+               20000  3544  8283   13717  16739  20091  23851  29179 
+              </tableData>
+            </table>
+            <property>systems/ccip/speed-error-factor</property>
+          </product>
+         </function>
+         <output>systems/ccip/distance</output>
+       </fcs_function>
+
+       <!-- calculate angle from level to impact point -->
+       <fcs_function name="depression-computer">
+         <function>
+          <product>
+            <atan>
+               <quotient>
+                 <property>systems/ccip/height-above-target</property>
+                 <property>systems/ccip/distance</property>
+               </quotient>
+            </atan>
+            <value>57.29578</value>
+          </product>
+         </function>
+         <output>systems/ccip/depression-angle</output>
+       </fcs_function>
+
+       <!-- calculate angle from fuselage ref line to impact point -->
+       <fcs_function name="sight-computer">
+         <function>
+           <sum>
+             <property>systems/ccip/depression-angle</property>
+             <property>systems/ccip/pitch-deg</property>
+           </sum>
+         </function>    
+         <output>systems/ccip/pipper-depression</output>
+       </fcs_function>
+
+       <!-- caculate vertical movement of pipper, based on distance of one meter -->
+       <!-- from pilot's eye to the HUD -->
+       <fcs_function name="sight-helper">
+         <function>
+           <product>
+              <tan>
+                <quotient>
+                  <property>systems/ccip/pipper-depression</property>
+                  <value>57.29578</value>
+                </quotient>
+              </tan>
+              <value>1.0</value>
+           </product>
+         </function>    
+         <output>systems/ccip/pipper-offset-m</output>
+       </fcs_function>
+
+  </channel>
+
+</system>
